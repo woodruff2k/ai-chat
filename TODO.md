@@ -69,17 +69,17 @@
 
 ## 5. 백엔드 — 대화 API
 
-- [ ] 메시지 Pydantic 모델 정의 (`backend/models/message.py`)
-- [ ] `POST /chat/stream` 엔드포인트 구현 (`backend/routers/chat.py`)
-  - [ ] MongoDB에서 `session_id`로 기존 대화 기록 로드
-  - [ ] LangGraph 그래프 실행 (대화 기록 주입)
-  - [ ] SSE 포맷으로 토큰 스트리밍 (`{"type": "token", "content": "..."}`)
-  - [ ] 응답 완료 후 MongoDB에 대화 기록 저장 (`{"type": "done"}`)
-- [ ] 에러 처리 구현
-  - [ ] Claude API 오류 → `{"type": "error", "code": "llm_error"}` 전송
-  - [ ] LangGraph 오류 → `{"type": "error", "code": "graph_error"}` 전송
-  - [ ] 존재하지 않는 `character_id` → 400 응답
-  - [ ] 에러 응답에 내부 정보 미포함 확인
+- [x] 메시지 Pydantic 모델 정의 (`backend/models/message.py`)
+- [x] `POST /chat/stream` 엔드포인트 구현 (`backend/routers/chat.py`)
+  - [x] MongoDB에서 `session_id`로 기존 대화 기록 로드
+  - [x] LangGraph 그래프 실행 (대화 기록 주입)
+  - [x] SSE 포맷으로 토큰 스트리밍 (`{"type": "token", "content": "..."}`)
+  - [x] 응답 완료 후 MongoDB에 대화 기록 저장 (`{"type": "done"}`)
+- [x] 에러 처리 구현
+  - [x] Claude API 오류 → `{"type": "error", "code": "llm_error"}` 전송
+  - [x] LangGraph 오류 → `{"type": "error", "code": "graph_error"}` 전송
+  - [x] 존재하지 않는 `character_id` → 400 응답
+  - [x] 에러 응답에 내부 정보 미포함 확인
 
 ---
 
