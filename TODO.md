@@ -2,21 +2,23 @@
 
 ## 0. Git 설정
 
-- [ ] `git init`
-- [ ] `.gitignore` 작성
-  - [ ] `frontend/` — `.next/`, `node_modules/`, `.env.local`
-  - [ ] `backend/` — `__pycache__/`, `.venv/`, `.env`
-  - [ ] 공통 — `.DS_Store`, `*.log`
-- [ ] 초기 커밋 (`Initial commit`)
+- [x] `git init`
+- [x] `.gitignore` 작성
+  - [x] `frontend/` — `.next/`, `node_modules/`, `.env.local`
+  - [x] `backend/` — `__pycache__/`, `.venv/`, `.env`
+  - [x] 공통 — `.DS_Store`, `*.log`
+- [x] 초기 커밋 (`Initial commit`)
 - [ ] 원격 저장소 생성 및 연결 (`git remote add origin`)
-- [ ] 브랜치 전략 설정
-  - [ ] `main` — 프로덕션 배포 기준
-  - [ ] `develop` — 개발 통합 브랜치
+- [x] 브랜치 전략 설정
+  - [x] `main` — 프로덕션 배포 기준
+  - [x] `develop` — 개발 통합 브랜치
   - [ ] `feature/*` — 기능 단위 작업 브랜치
 
 ---
 
 ## 1. 프로젝트 초기 설정
+
+> **주의**: 0단계(git init)를 먼저 완료한 후 진행. `create-next-app`은 `--no-git`, `uv init`은 `--no-vcs` 플래그 필수.
 
 - [x] 모노레포 디렉터리 구조 생성 (`frontend/`, `backend/`)
 - [x] `frontend/` — Next.js 15 (App Router) 프로젝트 초기화
