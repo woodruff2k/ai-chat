@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.mongo import connect, create_indexes, disconnect
+from routers import characters
 
 load_dotenv()
 
@@ -33,6 +34,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(characters.router)
 
 
 @app.get("/health")

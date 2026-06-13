@@ -50,9 +50,9 @@
 
 ## 3. 백엔드 — 캐릭터
 
-- [ ] 더미 캐릭터 데이터 작성 (`backend/data/characters.json`)
-- [ ] 캐릭터 Pydantic 모델 정의 (`backend/models/character.py`)
-- [ ] `GET /characters` 엔드포인트 구현 (`backend/routers/characters.py`)
+- [x] 더미 캐릭터 데이터 작성 (`backend/data/characters.json`)
+- [x] 캐릭터 Pydantic 모델 정의 (`backend/models/character.py`)
+- [x] `GET /characters` 엔드포인트 구현 (`backend/routers/characters.py`)
 
 ---
 
