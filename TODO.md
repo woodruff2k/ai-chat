@@ -8,7 +8,7 @@
   - [x] `backend/` — `__pycache__/`, `.venv/`, `.env`
   - [x] 공통 — `.DS_Store`, `*.log`
 - [x] 초기 커밋 (`Initial commit`)
-- [ ] 원격 저장소 생성 및 연결 (`git remote add origin`)
+- [x] 원격 저장소 생성 및 연결 (`git remote add origin`) — https://github.com/woodruff2k/ai-chat
 - [x] 브랜치 전략 설정
   - [x] `main` — 프로덕션 배포 기준
   - [x] `develop` — 개발 통합 브랜치
@@ -85,51 +85,51 @@
 
 ## 6. 프론트엔드 — 공통
 
-- [ ] 비즈니스 스타일 테마 설정 (Tailwind 컬러 팔레트: Slate 계열 + Blue Accent)
-- [ ] 전역 레이아웃 구성 (`app/layout.tsx`)
-- [ ] 백엔드 API 클라이언트 구현 (`frontend/lib/api.ts`)
-  - [ ] `GET /characters` 호출 함수
-  - [ ] `POST /chat/stream` SSE 스트리밍 함수 (Next.js API Route 미경유)
-- [ ] `session_id` 관리 유틸리티 (sessionStorage UUID 생성/조회)
+- [x] 비즈니스 스타일 테마 설정 (Tailwind 컬러 팔레트: Slate 계열 + Blue Accent)
+- [x] 전역 레이아웃 구성 (`app/layout.tsx`)
+- [x] 백엔드 API 클라이언트 구현 (`frontend/lib/api.ts`)
+  - [x] `GET /characters` 호출 함수
+  - [x] `POST /chat/stream` SSE 스트리밍 함수 (Next.js API Route 미경유)
+- [x] `session_id` 관리 유틸리티 (sessionStorage UUID 생성/조회)
 
 ---
 
 ## 7. 프론트엔드 — 캐릭터 선택 화면
 
-- [ ] `CharacterCard` 컴포넌트 구현
-  - [ ] 프로필 이미지, 이름, 설명, 태그 뱃지 표시
-  - [ ] 호버 시 테두리 강조 효과
-- [ ] 캐릭터 목록 그리드 레이아웃 구현 (`app/page.tsx`)
-  - [ ] 반응형: 모바일 1열 → 태블릿 2열 → 데스크톱 3~4열
-- [ ] 캐릭터 로딩 실패 시 에러 상태 UI 표시
+- [x] `CharacterCard` 컴포넌트 구현
+  - [x] 프로필 이미지, 이름, 설명, 태그 뱃지 표시
+  - [x] 호버 시 테두리 강조 효과
+- [x] 캐릭터 목록 그리드 레이아웃 구현 (`app/page.tsx`)
+  - [x] 반응형: 모바일 1열 → 태블릿 2열 → 데스크톱 3~4열
+- [x] 캐릭터 로딩 실패 시 에러 상태 UI 표시
 
 ---
 
 ## 8. 프론트엔드 — 대화 화면
 
-- [ ] `ChatWindow` 컴포넌트 구현 (`app/chat/[characterId]/page.tsx`)
-  - [ ] 헤더: 캐릭터 아바타 + 이름 표시
-  - [ ] 반응형: 모바일 전체 너비 / 데스크톱 `max-w-2xl` 중앙 정렬
-- [ ] `MessageBubble` 컴포넌트 구현
-  - [ ] 사용자 메시지: Blue Accent 버블
-  - [ ] AI 응답: Slate 700 버블
-  - [ ] 타이핑 애니메이션 (스트리밍 토큰 순차 표시)
-- [ ] 메시지 입력창 구현
-  - [ ] 하단 고정 레이아웃
-  - [ ] 모바일 소프트 키보드 대응 (`dvh` 단위)
-  - [ ] 터치 타겟 최소 44×44px
-- [ ] SSE 스트리밍 수신 및 렌더링 구현 (`ReadableStream`)
-- [ ] 에러 처리 UI
-  - [ ] 에러 수신 시 한국어 안내 메시지 표시
-  - [ ] 네트워크 오류 처리
+- [x] `ChatWindow` 컴포넌트 구현 (`app/chat/[characterId]/page.tsx`)
+  - [x] 헤더: 캐릭터 아바타 + 이름 표시
+  - [x] 반응형: 모바일 전체 너비 / 데스크톱 `max-w-2xl` 중앙 정렬
+- [x] `MessageBubble` 컴포넌트 구현
+  - [x] 사용자 메시지: Blue Accent 버블
+  - [x] AI 응답: Slate 700 버블
+  - [x] 타이핑 애니메이션 (스트리밍 토큰 순차 표시)
+- [x] 메시지 입력창 구현
+  - [x] 하단 고정 레이아웃
+  - [x] 모바일 소프트 키보드 대응 (`dvh` 단위)
+  - [x] 터치 타겟 최소 44×44px
+- [x] SSE 스트리밍 수신 및 렌더링 구현 (`ReadableStream`)
+- [x] 에러 처리 UI
+  - [x] 에러 수신 시 한국어 안내 메시지 표시
+  - [x] 네트워크 오류 처리
 
 ---
 
 ## 9. Docker 설정
 
-- [ ] `backend/Dockerfile` 작성
-- [ ] `frontend/Dockerfile` 작성 (`NEXT_PUBLIC_API_URL` 빌드 인자 포함)
-- [ ] 로컬에서 Docker 빌드 동작 확인
+- [x] `backend/Dockerfile` 작성
+- [x] `frontend/Dockerfile` 작성 (`NEXT_PUBLIC_API_URL` 빌드 인자 포함)
+- [x] 로컬에서 Docker 빌드 동작 확인
 
 ---
 
@@ -148,9 +148,9 @@
 
 ## 11. 최종 검증
 
-- [ ] 캐릭터 선택 → 대화 화면 진입 동작 확인
-- [ ] 스트리밍 응답 실시간 표시 확인
-- [ ] 탭 닫기 후 재접속 시 새 세션 시작 확인
-- [ ] MongoDB TTL 인덱스 동작 확인
-- [ ] 모바일 반응형 레이아웃 확인
-- [ ] 에러 상황(API 오류, 네트워크 오류) 동작 확인
+- [x] 캐릭터 선택 → 대화 화면 진입 동작 확인
+- [x] 스트리밍 응답 실시간 표시 확인
+- [x] 탭 닫기 후 재접속 시 새 세션 시작 확인
+- [x] MongoDB TTL 인덱스 동작 확인
+- [x] 모바일 반응형 레이아웃 확인
+- [x] 에러 상황(API 오류, 네트워크 오류) 동작 확인
