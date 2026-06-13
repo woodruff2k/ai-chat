@@ -58,12 +58,12 @@
 
 ## 4. 백엔드 — LangGraph 에이전트
 
-- [ ] LangGraph, langchain-anthropic 패키지 설치
-- [ ] `MessagesState` 기반 그래프 상태 정의 (`backend/graph/agent.py`)
-- [ ] `character_prompt_injection` 노드 구현 — 캐릭터 시스템 프롬프트 주입
-- [ ] `llm_call` 노드 구현 — Claude claude-sonnet-4-6 호출
-- [ ] 그래프 컴파일 (`[START] → character_prompt_injection → llm_call → [END]`)
-- [ ] `.astream_events()` 기반 토큰 스트리밍 검증
+- [x] LangGraph, langchain-anthropic 패키지 설치
+- [x] `MessagesState` 기반 그래프 상태 정의 (`backend/graph/agent.py`)
+- [x] `character_prompt_injection` 노드 구현 — 캐릭터 시스템 프롬프트 주입
+- [x] `llm_call` 노드 구현 — Claude claude-sonnet-4-6 호출
+- [x] 그래프 컴파일 (`[START] → character_prompt_injection → llm_call → [END]`)
+- [x] `.astream_events()` 기반 토큰 스트리밍 검증
 
 ---
 
