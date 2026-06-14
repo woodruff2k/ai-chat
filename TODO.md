@@ -135,14 +135,14 @@
 
 ## 10. Google Cloud 배포
 
-- [ ] GCP 프로젝트 설정 및 Artifact Registry 생성
-- [ ] Secret Manager에 `ANTHROPIC_API_KEY`, `MONGODB_URI` 등록
-- [ ] 백엔드 이미지 빌드 & Artifact Registry 푸시
-- [ ] 백엔드 Cloud Run 배포 및 URL 확인
-- [ ] 프론트엔드 이미지 빌드 (`NEXT_PUBLIC_API_URL` 주입) & 푸시
-- [ ] 프론트엔드 Cloud Run 배포
-- [ ] 백엔드 CORS 설정에 프론트엔드 Cloud Run URL 추가 후 재배포
-- [ ] MongoDB Atlas 네트워크 접근 설정 (Cloud Run IP 허용)
+- [x] GCP 프로젝트 설정 및 Artifact Registry 생성
+- [x] Secret Manager에 `ANTHROPIC_API_KEY`, `MONGODB_URI` 등록
+- [x] 백엔드 이미지 빌드 & Artifact Registry 푸시
+- [x] 백엔드 Cloud Run 배포 및 URL 확인 — https://ai-chat-backend-370670066576.asia-northeast3.run.app
+- [x] 프론트엔드 이미지 빌드 (`NEXT_PUBLIC_API_URL` 주입) & 푸시
+- [x] 프론트엔드 Cloud Run 배포 — https://ai-chat-frontend-370670066576.asia-northeast3.run.app
+- [x] 백엔드 CORS 설정에 프론트엔드 Cloud Run URL 추가 후 재배포
+- [x] MongoDB Atlas 네트워크 접근 설정 (Cloud Run 고정 NAT IP `8.230.9.66` 허용)
 
 ---
 
