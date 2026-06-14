@@ -1,9 +1,11 @@
+import os
+
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import SystemMessage
 
 from graph.state import GraphState
 
-llm = ChatAnthropic(model="claude-sonnet-4-6")
+llm = ChatAnthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6"))
 
 
 async def character_prompt_injection(state: GraphState) -> dict:

@@ -1,15 +1,18 @@
 import json
+import logging
 
 import anthropic
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
+from constants import ErrorCode
 from db.conversations import load_messages, save_messages
 from graph.agent import stream_tokens
 from models.message import ChatRequest
 from routers.characters import get_character
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
@@ -26,17 +29,20 @@ async def _generate(request: ChatRequest, system_prompt: str):
         async for token in stream_tokens(messages, system_prompt):
             full_response += token
             yield _sse({"type": "token", "content": token})
-    except anthropic.APIError:
-        yield _sse({"type": "error", "code": "llm_error"})
+    except anthropic.APIError as e:
+        logger.error("llm_error: %s", e)
+        yield _sse({"type": "error", "code": ErrorCode.LLM_ERROR})
         return
-    except Exception:
-        yield _sse({"type": "error", "code": "graph_error"})
+    except Exception as e:
+        logger.error("graph_error: %s", e, exc_info=True)
+        yield _sse({"type": "error", "code": ErrorCode.GRAPH_ERROR})
         return
-
-    from langchain_core.messages import AIMessage
 
     messages.append(AIMessage(content=full_response))
-    await save_messages(request.session_id, request.character_id, messages)
+    try:
+        await save_messages(request.session_id, request.character_id, messages)
+    except Exception as e:
+        logger.error("save_messages failed: %s", e, exc_info=True)
 
     yield _sse({"type": "done"})
 

@@ -154,3 +154,76 @@
 - [x] MongoDB TTL 인덱스 동작 확인
 - [x] 모바일 반응형 레이아웃 확인
 - [x] 에러 상황(API 오류, 네트워크 오류) 동작 확인
+
+---
+
+## 12. 버그 수정 및 기능 보완
+
+코드 리뷰에서 발견한 미구현·결함 항목. 높음 → 중간 → 낮음 순서로 작업.
+
+### 높음 — 버그 / 사용 불가 시나리오
+
+- [x] **`save_messages` 실패 시 스트림 비정상 종료** (`backend/routers/chat.py`)
+  - 현재: `await save_messages(...)` 예외 발생 시 `{"type": "done"}` 미전송 → 클라이언트 `onDone` 미호출 → `isStreaming` 영구 `true` → 입력창 잠김
+  - 수정: `save_messages` 호출을 `try/except`로 감싸고, 저장 실패 시 로그 기록 후 `done` 이벤트는 정상 전송
+
+- [x] **스트리밍 중 컴포넌트 언마운트 cleanup 없음** (`frontend/components/ChatWindow.tsx`)
+  - 현재: 채팅 중 뒤로가기 등으로 컴포넌트가 unmount되어도 SSE fetch가 백그라운드에서 계속 실행됨
+  - 수정: `AbortController`를 `useEffect` cleanup에서 `abort()` 호출하도록 연결
+
+- [x] **채팅 화면에서 뒤로가기 수단 없음** (`frontend/components/ChatWindow.tsx`)
+  - 현재: 채팅 화면 헤더에 캐릭터 선택 화면(`/`)으로 돌아갈 버튼 없음
+  - 수정: 헤더 좌측에 `<Link href="/">` 또는 `useRouter().back()` 버튼 추가
+
+### 중간 — 기능 누락 / UX 개선
+
+- [x] **메시지 최대 길이 제한 없음**
+  - 프론트: `<textarea>` `maxLength` 속성 추가 (예: 2000자)
+  - 백엔드: `ChatRequest.message` Pydantic `Field(max_length=2000)` 추가 → 초과 시 400 응답
+
+- [x] **`session_id` UUID 형식 검증 없음** (`backend/models/message.py`)
+  - 현재: 임의 문자열을 session_id로 허용 → MongoDB 쿼리 인젝션 방어층 부재
+  - 수정: Pydantic `Field(pattern=r'^[0-9a-f]{8}-...')` 또는 `UUID` 타입으로 강제
+
+- [x] **캐릭터 아바타 이미지 미구현**
+  - `characters.json`의 `avatar_url`이 `CharacterCard.tsx`에서 미사용 (이니셜만 표시)
+  - `frontend/public/avatars/` 디렉터리 및 placeholder 이미지 없음
+  - 수정: placeholder SVG 이미지 추가 + `next/image` 적용, 이미지 없을 때 이니셜 fallback 유지
+
+- [x] **캐릭터 선택 화면 로딩 UI 없음** (`frontend/app/`)
+  - 현재: `GET /characters` fetch 중 빈 화면
+  - 수정: `app/loading.tsx` 추가 (스켈레톤 카드 3~4개)
+
+- [x] **커스텀 404 / 에러 페이지 없음** (`frontend/app/`)
+  - `app/not-found.tsx` — 잘못된 캐릭터 ID 등 404 상황
+  - `app/error.tsx` — 런타임 에러 바운더리
+
+- [x] **`frontend/.dockerignore` 없음**
+  - 현재: `node_modules/`(수백 MB)가 Docker build context에 포함되어 빌드 지연
+  - 수정: `.dockerignore` 추가 (`node_modules`, `.next`, `.env.local` 등 제외)
+
+### 낮음 — 코드 품질 / 운영 개선
+
+- [x] **CORS 설정 프로덕션 강화** (`backend/main.py`)
+  - 현재: `allow_methods=["*"]`, `allow_headers=["*"]`
+  - 수정: `allow_methods=["POST", "GET", "OPTIONS"]`, `allow_headers=["Content-Type"]`
+
+- [x] **헬스체크에 MongoDB 연결 검증 포함** (`backend/main.py`)
+  - 현재: `GET /health`는 앱 기동만 확인, DB 장애 감지 불가
+  - 수정: `await get_db().command("ping")` 추가, 실패 시 503 반환
+
+- [x] **`msg.content` 타입 안전성** (`backend/db/conversations.py`)
+  - LangChain `BaseMessage.content`는 `str | list[dict]` Union 타입
+  - `_to_dict`에서 `content`가 리스트일 경우 `str` 변환 처리 추가
+
+- [x] **모델명 환경변수화** (`backend/graph/nodes.py`)
+  - 현재: `ChatAnthropic(model="claude-sonnet-4-6")` 하드코딩
+  - 수정: `os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")`으로 변경
+
+- [x] **로깅 설정** (`backend/main.py`)
+  - 현재: `logging.basicConfig` 미설정 → 배포 환경에서 로그 레벨·포맷 비일관
+  - 수정: `logging.basicConfig(level=logging.INFO, format="...")` 앱 기동 시 설정
+
+- [x] **에러 코드 상수 정의** (`backend/routers/chat.py`)
+  - 현재: `"llm_error"`, `"graph_error"` 문자열 리터럴 산재
+  - 수정: `backend/constants.py` 또는 `Enum`으로 정의, 프론트(`lib/api.ts`)와 동기화

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { SendHorizontal } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowLeft, SendHorizontal } from 'lucide-react'
 import { type Character, streamChat } from '@/lib/api'
 import { getOrCreateSessionId } from '@/lib/session'
 import MessageBubble from '@/components/MessageBubble'
@@ -19,9 +20,11 @@ export default function ChatWindow({ character }: { character: Character }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [headerImgError, setHeaderImgError] = useState(false)
   const sessionIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId()
@@ -30,6 +33,12 @@ export default function ChatWindow({ character }: { character: Character }) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort()
+    }
+  }, [])
 
   function resizeTextarea() {
     const el = textareaRef.current
@@ -63,6 +72,9 @@ export default function ChatWindow({ character }: { character: Character }) {
       { id: aiId, role: 'assistant', content: '', isStreaming: true },
     ])
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     await streamChat(
       sessionIdRef.current,
       character.id,
@@ -87,7 +99,8 @@ export default function ChatWindow({ character }: { character: Character }) {
           )
           setIsStreaming(false)
         },
-      }
+      },
+      controller.signal,
     )
   }
 
@@ -102,9 +115,28 @@ export default function ChatWindow({ character }: { character: Character }) {
     <div className="flex h-dvh flex-col bg-slate-900">
       {/* Header */}
       <header className="flex shrink-0 items-center gap-3 border-b border-slate-700 bg-slate-800 px-4 py-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-600 text-base font-bold text-blue-400">
-          {character.name.charAt(0)}
-        </div>
+        <Link
+          href="/"
+          aria-label="캐릭터 선택으로 돌아가기"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200"
+        >
+          <ArrowLeft size={18} />
+        </Link>
+        {headerImgError || !character.avatar_url ? (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-600 text-base font-bold text-blue-400">
+            {character.name.charAt(0)}
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={character.avatar_url}
+            alt={character.name}
+            width={40}
+            height={40}
+            className="h-10 w-10 shrink-0 rounded-full object-cover"
+            onError={() => setHeaderImgError(true)}
+          />
+        )}
         <div className="min-w-0">
           <p className="truncate font-semibold text-slate-50">{character.name}</p>
           <p className="truncate text-xs text-slate-400">{character.description}</p>
@@ -142,6 +174,7 @@ export default function ChatWindow({ character }: { character: Character }) {
             placeholder="메시지를 입력하세요… (Shift+Enter로 줄바꿈)"
             rows={1}
             disabled={isStreaming}
+            maxLength={2000}
             className="min-h-[44px] flex-1 resize-none rounded-xl border border-slate-600 bg-slate-700 px-4 py-2.5 text-sm text-slate-50 placeholder-slate-500 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
             style={{ maxHeight: '120px', overflowY: 'auto' }}
           />

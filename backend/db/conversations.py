@@ -13,7 +13,12 @@ def _to_langchain(msg: dict) -> BaseMessage:
 
 def _to_dict(msg: BaseMessage) -> dict:
     role = "user" if isinstance(msg, HumanMessage) else "assistant"
-    return {"role": role, "content": msg.content}
+    content = msg.content
+    if isinstance(content, list):
+        content = "".join(
+            part.get("text", "") for part in content if isinstance(part, dict)
+        )
+    return {"role": role, "content": str(content)}
 
 
 async def load_messages(session_id: str) -> list[BaseMessage]:
