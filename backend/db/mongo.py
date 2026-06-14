@@ -15,7 +15,8 @@ def get_client() -> AsyncIOMotorClient:
 
 
 def get_db() -> AsyncIOMotorDatabase:
-    return get_client()["ai_chat"]
+    db_name = os.environ.get("MONGODB_DB", "ai_chat")
+    return get_client()[db_name]
 
 
 async def connect() -> None:
