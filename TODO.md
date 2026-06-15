@@ -227,3 +227,33 @@
 - [x] **에러 코드 상수 정의** (`backend/routers/chat.py`)
   - 현재: `"llm_error"`, `"graph_error"` 문자열 리터럴 산재
   - 수정: `backend/constants.py` 또는 `Enum`으로 정의, 프론트(`lib/api.ts`)와 동기화
+
+---
+
+## 13. 보안 검토
+
+### 해당 없음 / 이미 완료
+
+| 항목 | 판단 | 근거 |
+|---|---|---|
+| CSRF 보호 | **해당 없음** | 쿠키 기반 인증 미사용. `session_id`는 `sessionStorage` → JSON body로 전송. 브라우저가 자동으로 첨부하는 자격증명(쿠키) 없음 |
+| 입력값 새니타이제이션 | **이미 완료** | `session_id` UUID 패턴 검증, `message` max_length=2000 (Pydantic), `character_id` 고정 목록 매칭으로 허용 외 값 400 처리. 프론트는 React JSX(`{content}`)로 렌더링하므로 HTML 이스케이프 자동 적용 (`dangerouslySetInnerHTML` 미사용 확인) |
+| API 인증 | **의도적 비구현** | CLAUDE.md 명시적 제외: "인증 없이 누구나 사용 가능" — 공개 엔터테인먼트 서비스 특성 |
+| SQL 주입 | **해당 없음** | SQL 미사용 (MongoDB). NoSQL 주입은 Pydantic 타입 강제(str) + UUID 패턴 검증으로 파라미터 바인딩 보장. 시스템 프롬프트는 서버 파일에서만 로드 (클라이언트 입력 미사용) |
+
+### 미구현 — 추가 필요
+
+- [x] **HTTP 보안 헤더 설정**
+
+  **프론트엔드** (`frontend/next.config.ts` — `headers()` 추가):
+  - `X-Frame-Options: DENY` — 클릭재킹 방지
+  - `X-Content-Type-Options: nosniff` — MIME 타입 스니핑 방지
+  - `Referrer-Policy: strict-origin-when-cross-origin` — 레퍼러 정보 최소화
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=()` — 불필요한 브라우저 API 차단
+  - `Content-Security-Policy` — Next.js 인라인 스크립트 특성상 nonce 방식 또는 최소한 `default-src 'self'` + `connect-src [백엔드 URL]` 설정
+
+  **백엔드** (`backend/main.py` — HTTP 미들웨어 추가):
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: DENY`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - API 서버이므로 CSP는 불필요

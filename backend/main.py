@@ -14,9 +14,38 @@ logging.basicConfig(
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from db.mongo import connect, create_indexes, disconnect, get_db
 from routers import characters, chat
+
+
+class SecurityHeadersMiddleware:
+    """StreamingResponse와 호환되는 순수 ASGI 보안 헤더 미들웨어."""
+
+    _HEADERS = [
+        ("x-content-type-options", "nosniff"),
+        ("x-frame-options", "DENY"),
+        ("referrer-policy", "strict-origin-when-cross-origin"),
+    ]
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def _send(message) -> None:
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                for name, value in self._HEADERS:
+                    headers.append(name, value)
+            await send(message)
+
+        await self.app(scope, receive, _send)
 
 
 @asynccontextmanager
@@ -43,6 +72,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
+app.add_middleware(SecurityHeadersMiddleware)  # CORS보다 외부에서 모든 응답에 적용
 
 
 app.include_router(characters.router)
