@@ -10,14 +10,14 @@ env:
   REGISTRY: asia-northeast3-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-chat
   BACKEND_URL: https://ai-chat-backend-370670066576.asia-northeast3.run.app
 
-# Required GitHub configuration:
-#   Secrets  → GCP_SA_KEY  : GCP service account JSON key
-#   Variables → GCP_PROJECT_ID : GCP project ID (e.g. project-0edc7252-3902-43fa-a66)
-#
-# Required IAM roles for the service account:
-#   roles/run.admin
-#   roles/artifactregistry.writer
-#   roles/iam.serviceAccountUser
+# Required GitHub Variables (Settings → Secrets and variables → Actions → Variables):
+#   GCP_PROJECT_ID  : GCP project ID
+#   GCP_WIF_PROVIDER: projects/<number>/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+#   GCP_SA_EMAIL    : github-actions@<project-id>.iam.gserviceaccount.com
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   deploy-backend:
@@ -28,7 +28,8 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v2
 
@@ -82,7 +83,8 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v2
 
