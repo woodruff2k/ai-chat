@@ -15,6 +15,7 @@ interface Message {
 }
 
 const ERROR_MESSAGE = '응답 중 오류가 발생했습니다. 다시 시도해 주세요.'
+const RATE_LIMIT_MESSAGE = '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.'
 
 export default function ChatWindow({ character }: { character: Character }) {
   const [messages, setMessages] = useState<Message[]>([])
@@ -91,10 +92,11 @@ export default function ChatWindow({ character }: { character: Character }) {
           )
           setIsStreaming(false)
         },
-        onError: () => {
+        onError: (code) => {
+          const content = code === 'rate_limit' ? RATE_LIMIT_MESSAGE : ERROR_MESSAGE
           setMessages((prev) =>
             prev.map((m) =>
-              m.id === aiId ? { ...m, content: ERROR_MESSAGE, isStreaming: false } : m
+              m.id === aiId ? { ...m, content, isStreaming: false } : m
             )
           )
           setIsStreaming(false)

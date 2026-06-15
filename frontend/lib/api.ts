@@ -40,6 +40,11 @@ export async function streamChat(
     return
   }
 
+  if (res.status === 429) {
+    callbacks.onError('rate_limit')
+    return
+  }
+
   if (!res.ok || !res.body) {
     callbacks.onError('network_error')
     return

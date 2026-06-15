@@ -12,12 +12,15 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from db.mongo import connect, create_indexes, disconnect, get_db
+from limiter import limiter
 from routers import characters, chat
 
 
@@ -56,7 +59,17 @@ async def lifespan(app: FastAPI):
     await disconnect()
 
 
+async def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요."},
+        headers={"Retry-After": "60"},
+    )
+
+
 app = FastAPI(title="AI Character Chat API", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
 
 _allowed_origins = [
     "http://localhost:3000",

@@ -257,3 +257,68 @@
   - `X-Frame-Options: DENY`
   - `Referrer-Policy: strict-origin-when-cross-origin`
   - API 서버이므로 CSP는 불필요
+
+---
+
+## 14. 레이트 제한 및 DoS 대책
+
+### 현재 상태
+
+Cloud Run 인프라 레벨에서 자연적 상한이 존재함:
+- `concurrency=10` per instance × `max-instances=2` → 동시 SSE 연결 최대 **20개**
+- 초과 요청은 Cloud Run이 자동으로 503 반환
+
+앱 레벨 rate limiting은 **전혀 없음** (코드·의존성 모두 미존재).
+
+### 구현 전 필수 이해: In-Memory 방식의 한계
+
+`slowapi`(FastAPI 표준 rate limiting 라이브러리)의 기본 저장소는 **인스턴스 로컬 메모리**:
+- 인스턴스 재시작 시 카운터 초기화
+- max-instances=2 환경에서 **실제 글로벌 허용량 = 설정값 × 2** (각 인스턴스가 독립 카운팅)
+- 예: IP당 20 req/min 설정 → 운 나쁜 경우 40 req/min까지 통과 가능
+
+진정한 글로벌 rate limiting을 위해서는 **Redis (Cloud Memorystore)** 필요 — 추가 비용·운영 복잡도 수반.
+이 앱의 소규모 트래픽(동시 5~10명 기준)에서는 in-memory 방식이 충분히 실용적.
+
+### 미구현 — 추가 필요
+
+- [x] **`slowapi` 의존성 추가 및 기본 설정** (`backend/`)
+  ```
+  uv add slowapi
+  ```
+  - `Limiter` 초기화: `key_func=get_remote_address` (IP 기반 기본값)
+  - Cloud Run 프록시 헤더 처리: `request.headers.get("X-Forwarded-For")` 첫 번째 IP 추출
+    (`request.client.host`는 Cloud Run LB IP이므로 사용 불가)
+  - `app.state.limiter` 등록, `_rate_limit_exceeded_handler` 전역 예외 핸들러 등록
+
+- [x] **IP별 레이트 제한** (`backend/routers/`)
+  - `POST /chat/stream`: **20 req/min per IP** — LLM 호출 비용 고려
+  - `GET /characters`: **60 req/min per IP** — 가벼운 엔드포인트
+  - `GET /health`: 제한 없음 (모니터링 용도)
+  - 초과 시 `429 Too Many Requests` + `Retry-After` 헤더 반환
+
+- [x] **세션별 레이트 제한** (`backend/routers/chat.py`)
+  - `POST /chat/stream`: **10 req/min per session_id**
+  - IP 제한과 독립 적용 (둘 다 초과해야 차단이 아니라, 하나라도 초과 시 차단)
+  - `key_func`을 커스텀 함수로: `request.json()`의 `session_id` 추출
+
+  > **주의**: `session_id` 기반 제한은 `request.json()` 파싱이 필요하므로  
+  > Pydantic 검증 전 단계에서 별도 처리 필요. 구현 복잡도 증가.  
+  > IP 제한만으로도 충분하면 세션 제한은 생략 가능.
+
+- [x] **레이트 제한 오류 처리**
+  - **백엔드**: `slowapi`의 기본 429 응답을 JSON 포맷으로 통일
+    ```json
+    {"detail": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.", "retry_after": 60}
+    ```
+  - `/chat/stream`은 StreamingResponse 시작 *전*에 rate limit 검사가 이루어지므로  
+    일반 JSON 429 응답으로 처리 가능 (SSE 스트림 내부에서 처리할 필요 없음)
+  - **프론트엔드** (`frontend/lib/api.ts`): HTTP 429 수신 시 `onError('rate_limit')` 호출
+  - **프론트엔드** (`frontend/components/ChatWindow.tsx`): `rate_limit` 코드 수신 시  
+    "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요." 메시지 표시 (기존 `ERROR_MESSAGE`와 구분)
+
+### 이후 고려사항 (선택)
+
+- **Cloud Armor**: Google Cloud 레벨 WAF + rate limiting. 앱 코드 변경 없이 IP별 제한 적용 가능. 소규모 트래픽에서는 비용 대비 효과 낮음.
+- **Redis (Cloud Memorystore)**: 인스턴스 간 공유 카운터. 글로벌 정확도 필요 시 도입. 월 ~$30 추가 비용.
+- **`max-instances` 조정**: 트래픽 증가 시 인스턴스 수 확대 전 rate limit 설정 재검토 필요.
