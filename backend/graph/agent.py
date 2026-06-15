@@ -27,8 +27,11 @@ async def stream_tokens(
         {"messages": messages, "system_prompt": system_prompt},
         stream_mode="messages",
     ):
-        # chunk는 (message_chunk, metadata) 튜플
         if isinstance(chunk, tuple):
-            message_chunk, _ = chunk
-            if hasattr(message_chunk, "content") and message_chunk.content:
+            message_chunk, metadata = chunk
+            if (
+                metadata.get("langgraph_node") == "llm_call"
+                and hasattr(message_chunk, "content")
+                and message_chunk.content
+            ):
                 yield message_chunk.content
