@@ -39,3 +39,5 @@ backend/.env
 .DS_Store
 *.pem
 *.log
+/.env
+!/.env.example

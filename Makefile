@@ -1,9 +1,10 @@
 .PHONY: init dev stop logs build deploy-backend deploy-frontend deploy
 
+-include .env
+
 BACKEND_DIR  := backend
 FRONTEND_DIR := frontend
 
-PROJECT_ID   := project-0edc7252-3902-43fa-a66
 REGION       := asia-northeast3
 REGISTRY     := $(REGION)-docker.pkg.dev/$(PROJECT_ID)/ai-chat
 BACKEND_URL  := https://ai-chat-backend-370670066576.$(REGION).run.app
