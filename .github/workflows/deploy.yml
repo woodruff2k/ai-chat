@@ -32,6 +32,8 @@ jobs:
           service_account: ${{ vars.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: latest
 
       - name: Configure Docker
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
@@ -67,7 +69,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -87,6 +89,8 @@ jobs:
           service_account: ${{ vars.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: latest
 
       - name: Configure Docker
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
