@@ -46,7 +46,20 @@ def _sse(payload: dict) -> str:
 
 async def _generate(chat_request: ChatRequest, system_prompt: str):
     messages = await load_messages(chat_request.session_id)
-    messages.append(HumanMessage(content=chat_request.message))
+
+    if chat_request.image:
+        human_content: list[dict] = [
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{chat_request.image.media_type};base64,{chat_request.image.data}"
+                },
+            },
+            {"type": "text", "text": chat_request.message},
+        ]
+        messages.append(HumanMessage(content=human_content))
+    else:
+        messages.append(HumanMessage(content=chat_request.message))
 
     full_response = ""
     try:

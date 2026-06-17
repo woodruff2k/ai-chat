@@ -15,6 +15,9 @@ def _to_dict(msg: BaseMessage) -> dict:
     role = "user" if isinstance(msg, HumanMessage) else "assistant"
     content = msg.content
     if isinstance(content, list):
+        if role == "user":
+            # Preserve multimodal content (image + text) as-is
+            return {"role": role, "content": content}
         content = "".join(
             part.get("text", "") for part in content if isinstance(part, dict)
         )
