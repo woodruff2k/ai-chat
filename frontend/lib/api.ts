@@ -20,19 +20,30 @@ export interface StreamCallbacks {
   onError: (code: string) => void
 }
 
+export interface ImagePayload {
+  data: string
+  media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+}
+
 export async function streamChat(
   sessionId: string,
   characterId: string,
   message: string,
   callbacks: StreamCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  image?: ImagePayload,
 ): Promise<void> {
   let res: Response
   try {
     res = await fetch(`${API_URL}/chat/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: sessionId, character_id: characterId, message }),
+      body: JSON.stringify({
+        session_id: sessionId,
+        character_id: characterId,
+        message,
+        ...(image ? { image } : {}),
+      }),
       signal,
     })
   } catch {
